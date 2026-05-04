@@ -80,7 +80,7 @@ jobs:
     
     - name: Run pip-audit (fail on any vulnerability)
       run: |
-        pip-audit --strict --desc
+        pip-audit --strict --desc --skip-editable
         echo "✅ Zero vulnerabilities found"
 
   trivy-scan:

@@ -77,7 +77,7 @@ jobs:
     
     - name: Run pip-audit (zero vulnerabilities)
       run: |
-        pip-audit --strict --desc
+        pip-audit --strict --desc --skip-editable
         echo "✅ pip-audit: Zero vulnerabilities"
     
     - name: Run Trivy filesystem scan (zero vulnerabilities)

@@ -1,0 +1,186 @@
+name: Publish to PyPI (Production Release)
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger on version tags like v1.0.0
+
+jobs:
+  verify-tag-version-match:
+    name: Verify Tag Matches Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version_check.outputs.version }}
+      tag: ${{ steps.version_check.outputs.tag }}
+      match: ${{ steps.version_check.outputs.match }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Extract and verify version match
+      id: version_check
+      run: |
+        # Extract tag without 'v' prefix
+        TAG_VERSION=${GITHUB_REF#refs/tags/v}
+        echo "tag=$TAG_VERSION" >> $GITHUB_OUTPUT
+        
+        # Extract version from pyproject.toml
+        PYPROJECT_VERSION=$(grep -E '^version = ' pyproject.toml | cut -d'"' -f2)
+        echo "version=$PYPROJECT_VERSION" >> $GITHUB_OUTPUT
+        
+        echo "════════════════════════════════════════════════"
+        echo "📌 Tag version: $TAG_VERSION"
+        echo "📦 pyproject.toml version: $PYPROJECT_VERSION"
+        echo "════════════════════════════════════════════════"
+        
+        # Verify they match
+        if [ "$TAG_VERSION" = "$PYPROJECT_VERSION" ]; then
+          echo "match=true" >> $GITHUB_OUTPUT
+          echo "✅ Version match verified!"
+        else
+          echo "match=false" >> $GITHUB_OUTPUT
+          echo "❌ ERROR: Tag version ($TAG_VERSION) does not match pyproject.toml version ($PYPROJECT_VERSION)"
+          exit 1
+        fi
+
+  run-quality-gates:
+    name: Run All Quality Gates
+    runs-on: ubuntu-latest
+    needs: verify-tag-version-match
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+        pip install pip-audit
+    
+    - name: Run unit tests with 100% pass requirement
+      run: |
+        pytest --cov=backend --cov-report=term-missing --cov-report=xml --cov-fail-under=100 -v
+        echo "✅ Unit tests: 100% pass rate"
+    
+    - name: Enforce 100% coverage gate
+      run: |
+        coverage report --fail-under=100
+        echo "✅ Coverage: 100%"
+    
+    - name: Run pip-audit (zero vulnerabilities)
+      run: |
+        pip-audit --strict --desc
+        echo "✅ pip-audit: Zero vulnerabilities"
+    
+    - name: Run Trivy filesystem scan (zero vulnerabilities)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'table'
+        severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+        exit-code: '1'
+    
+    - name: Quality gates passed
+      run: |
+        echo "════════════════════════════════════════════════"
+        echo "✅ ALL QUALITY GATES PASSED FOR PRODUCTION RELEASE"
+        echo "════════════════════════════════════════════════"
+        echo "✓ Unit Tests: 100% pass rate"
+        echo "✓ Code Coverage: 100%"
+        echo "✓ pip-audit: Zero vulnerabilities"
+        echo "✓ Trivy Scan: Zero vulnerabilities"
+        echo "✓ Version Match: Tag ${{ needs.verify-tag-version-match.outputs.tag }} == pyproject.toml ${{ needs.verify-tag-version-match.outputs.version }}"
+        echo "════════════════════════════════════════════════"
+
+  publish-pypi:
+    name: Build & Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [verify-tag-version-match, run-quality-gates]
+    permissions:
+      id-token: write  # Required for trusted publishing
+      contents: write  # Required for creating GitHub release
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install build tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+    
+    - name: Build package
+      run: |
+        python -m build
+        echo "✅ Package built successfully"
+    
+    - name: Verify package contents
+      run: |
+        twine check dist/*
+        ls -lh dist/
+        echo "✅ Package validation passed"
+    
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        verbose: true
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/*
+        generate_release_notes: true
+        body: |
+          ## 🎉 OmniNode ${{ needs.verify-tag-version-match.outputs.version }}
+          
+          ### Quality Gates Status
+          ✅ Unit Tests: 100% pass rate
+          ✅ Code Coverage: 100%
+          ✅ Security Audit (pip-audit): Zero vulnerabilities
+          ✅ Filesystem Scan (Trivy): Zero vulnerabilities
+          ✅ Version Match: Verified
+          
+          ### Installation
+          ```bash
+          pip install omninode==${{ needs.verify-tag-version-match.outputs.version }}
+          ```
+          
+          ### PyPI
+          https://pypi.org/project/omninode/${{ needs.verify-tag-version-match.outputs.version }}/
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Publication summary
+      run: |
+        echo "════════════════════════════════════════════════"
+        echo "🎉 PRODUCTION RELEASE PUBLISHED"
+        echo "════════════════════════════════════════════════"
+        echo "Package: omninode"
+        echo "Version: ${{ needs.verify-tag-version-match.outputs.version }}"
+        echo "PyPI: https://pypi.org/project/omninode/${{ needs.verify-tag-version-match.outputs.version }}/"
+        echo ""
+        echo "Install with:"
+        echo "pip install omninode==${{ needs.verify-tag-version-match.outputs.version }}"
+        echo "════════════════════════════════════════════════"
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist-pypi-${{ needs.verify-tag-version-match.outputs.version }}
+        path: dist/

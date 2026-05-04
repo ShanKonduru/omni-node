@@ -8,6 +8,44 @@ version = "0.1.0"
 description = "OmniNode - A universal MCP client with slash-command interface"
 readme = "README.md"
 requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+    {name = "OmniNode Contributors", email = "contact@omninode.dev"}
+]
+maintainers = [
+    {name = "OmniNode Contributors", email = "contact@omninode.dev"}
+]
+keywords = [
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "llm",
+    "fastapi",
+    "client",
+    "universal-client",
+    "slash-commands",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Framework :: FastAPI",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/omni-node"
+Documentation = "https://github.com/yourusername/omni-node/blob/main/README.md"
+Repository = "https://github.com/yourusername/omni-node"
+Issues = "https://github.com/yourusername/omni-node/issues"
+Changelog = "https://github.com/yourusername/omni-node/releases"
+
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",

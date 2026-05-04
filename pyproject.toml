@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "omni-node"
-version = "0.1.0"
+version = "0.2.0"
 description = "OmniNode - A universal MCP client with slash-command interface"
 readme = "README.md"
 requires-python = ">=3.12"

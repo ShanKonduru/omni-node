@@ -1,0 +1,67 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    name: Unit Tests & Coverage (100% Required)
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+    
+    - name: Run unit tests with coverage
+      run: |
+        pytest --cov=backend --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=100 -v
+        echo "✅ Unit tests: 100% pass rate"
+    
+    - name: Verify 100% coverage requirement
+      run: |
+        coverage report --fail-under=100
+        echo "✅ Code coverage: 100%"
+    
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-omninode
+        fail_ci_if_error: false
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    
+    - name: Store coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage.xml
+    
+    - name: Test summary
+      if: always()
+      run: |
+        echo "════════════════════════════════════════════════"
+        echo "📊 UNIT TEST RESULTS"
+        echo "════════════════════════════════════════════════"
+        if [ ${{ job.status }} == 'success' ]; then
+          echo "✅ All tests passed with 100% coverage"
+        else
+          echo "❌ Tests failed or coverage below 100%"
+        fi
+        echo "════════════════════════════════════════════════"

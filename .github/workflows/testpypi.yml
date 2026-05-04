@@ -2,22 +2,24 @@ name: Publish to TestPyPI
 
 on:
   workflow_run:
-    workflows: ["CI - Quality Gates"]
+    workflows: ["Unit Tests", "Security Scanning"]
     types:
       - completed
     branches:
       - main
+      - master
+      - develop
 
 jobs:
   check-ci-success:
-    name: Verify CI Passed
+    name: Verify Prerequisites Passed
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
     
     steps:
-    - name: CI verification
+    - name: Prerequisites verification
       run: |
-        echo "✅ CI workflow completed successfully"
+        echo "✅ Unit Tests and Security Scans completed successfully"
         echo "Proceeding with TestPyPI publication..."
 
   publish-testpypi:

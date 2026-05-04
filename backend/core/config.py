@@ -22,16 +22,14 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     encryption_key: str = "your-encryption-key-here-change-in-production"
     
-    # CORS - handle both comma-separated string and list
+    # CORS
     cors_origins: str = "http://localhost:3000"
     
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     
     def get_cors_origins_list(self) -> List[str]:
-        """Parse CORS origins as a list."""
-        if isinstance(self.cors_origins, str):
-            return [origin.strip() for origin in self.cors_origins.split(",")]
-        return self.cors_origins
+        """Parse CORS origins as a list from comma-separated string."""
+        return [origin.strip() for origin in self.cors_origins.split(",")]
 
 
 @lru_cache()

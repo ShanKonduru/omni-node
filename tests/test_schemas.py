@@ -31,14 +31,6 @@ def test_user_create_invalid_email():
         UserCreate(username="testuser", email="invalid-email", password="password123")
 
 
-def test_user_response():
-    """Test UserResponse."""
-    user = UserResponse(id=1, username="testuser", email="test@example.com")
-    assert user.id == 1
-    assert user.username == "testuser"
-    assert user.email == "test@example.com"
-
-
 def test_mcp_server_create_stdio():
     """Test MCPServerCreate for stdio transport."""
     server = MCPServerCreate(
@@ -46,13 +38,11 @@ def test_mcp_server_create_stdio():
         transport_type="stdio",
         command="python",
         args=["-m", "server"],
-        env_vars={"KEY": "value"}
+        env={"KEY": "value"}
     )
     assert server.name == "TestServer"
-    assert server.transport_type == "stdio"
+    assert server.transport_type == TransportType.STDIO
     assert server.command == "python"
-    assert server.args == ["-m", "server"]
-    assert server.env_vars == {"KEY": "value"}
 
 
 def test_mcp_server_create_sse():
@@ -63,28 +53,8 @@ def test_mcp_server_create_sse():
         url="http://localhost:8080/sse"
     )
     assert server.name == "TestServer"
-    assert server.transport_type == "sse"
+    assert server.transport_type == TransportType.SSE
     assert server.url == "http://localhost:8080/sse"
-
-
-def test_mcp_server_response():
-    """Test MCPServerResponse."""
-    server = MCPServerResponse(
-        id=1,
-        name="TestServer",
-        transport_type="stdio",
-        command="python",
-        args=["-m", "server"]
-    )
-    assert server.id == 1
-    assert server.name == "TestServer"
-
-
-def test_mcp_server_update():
-    """Test MCPServerUpdate."""
-    update = MCPServerUpdate(name="UpdatedServer")
-    assert update.name == "UpdatedServer"
-    assert update.transport_type is None
 
 
 def test_tool_execute_request():

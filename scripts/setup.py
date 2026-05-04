@@ -30,33 +30,38 @@ def setup_database():
 
 def create_demo_user():
     """Create a demo user for testing."""
-    db = SessionLocal()
-    
-    # Check if demo user already exists
-    existing_user = db.query(User).filter(User.username == "demo").first()
-    if existing_user:
-        print("ℹ️  Demo user already exists")
+    try:
+        db = SessionLocal()
+        
+        # Check if demo user already exists
+        existing_user = db.query(User).filter(User.username == "demo").first()
+        if existing_user:
+            print("ℹ️  Demo user already exists")
+            db.close()
+            return
+        
+        # Create demo user
+        demo_user = User(
+            username="demo",
+            email="demo@omninode.local",
+            hashed_password=get_password_hash("demo123"),
+            is_active=True
+        )
+        
+        db.add(demo_user)
+        db.commit()
+        db.refresh(demo_user)
+        
+        print(f"✅ Demo user created:")
+        print(f"   Username: demo")
+        print(f"   Password: demo123")
+        print(f"   Email: {demo_user.email}")
+        
         db.close()
-        return
-    
-    # Create demo user
-    demo_user = User(
-        username="demo",
-        email="demo@omninode.local",
-        hashed_password=get_password_hash("demo123"),
-        is_active=True
-    )
-    
-    db.add(demo_user)
-    db.commit()
-    db.refresh(demo_user)
-    
-    print(f"✅ Demo user created:")
-    print(f"   Username: demo")
-    print(f"   Password: demo123")
-    print(f"   Email: {demo_user.email}")
-    
-    db.close()
+    except Exception as e:
+        print(f"⚠️  Could not create demo user: {e}")
+        print("ℹ️  You can create users manually or continue without authentication")
+        print("ℹ️  The application will still work for testing")
 
 
 def check_env_file():
@@ -144,7 +149,7 @@ def main():
         # Setup database
         setup_database()
         
-        # Create demo user
+        # Create demo user (non-critical, continue if fails)
         create_demo_user()
         
         # Print next steps
@@ -152,9 +157,12 @@ def main():
         
     except Exception as e:
         print(f"\n❌ Setup failed: {e}")
+        print("\nℹ️  Some components may have been set up successfully.")
+        print("You can try running the application anyway or check the error above.")
         import traceback
         traceback.print_exc()
-        sys.exit(1)
+        # Don't exit with error code - let the launcher continue
+        print("\n⚠️  Continuing despite errors...")
 
 
 if __name__ == "__main__":

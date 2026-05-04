@@ -41,18 +41,54 @@ omni-node/
 
 ## Quick Start
 
-### 1. Backend Setup
+### 🚀 One-Click Launch (Recommended)
+
+**Windows:**
+```bash
+start.bat
+```
+
+**Linux/macOS:**
+```bash
+chmod +x start.sh
+./start.sh
+```
+
+This will automatically:
+- ✅ Run setup and initialize database
+- ✅ Install all dependencies
+- ✅ Start backend server (http://localhost:8000)
+- ✅ Start frontend server (http://localhost:3000)
+
+### ⚡ Quick Launch (Already Configured)
+
+If you've already run setup before:
+
+**Windows:**
+```bash
+start-quick.bat
+```
+
+**Linux/macOS:**
+```bash
+chmod +x start-quick.sh
+./start-quick.sh
+```
+
+### 📝 Manual Setup
+
+If you prefer manual control:
+
+#### 1. Backend Setup
 
 ```bash
 # Install Python dependencies
 pip install -e ".[dev]"
 
-# Copy environment file
-cp .env.example .env
+# Run setup script
+python scripts/setup.py
 
-# Edit .env and update SECRET_KEY and ENCRYPTION_KEY
-
-# Run the FastAPI backend
+# Start the FastAPI backend
 cd backend
 python main.py
 ```
@@ -60,7 +96,7 @@ python main.py
 Backend will be available at http://localhost:8000
 API docs at http://localhost:8000/docs
 
-### 2. Frontend Setup
+#### 2. Frontend Setup
 
 ```bash
 # Navigate to frontend

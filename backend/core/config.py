@@ -1,7 +1,8 @@
 """Application configuration using Pydantic settings."""
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
+from typing import List
 
 
 class Settings(BaseSettings):
@@ -21,11 +22,16 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     encryption_key: str = "your-encryption-key-here-change-in-production"
     
-    # CORS
-    cors_origins: list[str] = ["http://localhost:3000"]
+    # CORS - handle both comma-separated string and list
+    cors_origins: str = "http://localhost:3000"
     
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    
+    def get_cors_origins_list(self) -> List[str]:
+        """Parse CORS origins as a list."""
+        if isinstance(self.cors_origins, str):
+            return [origin.strip() for origin in self.cors_origins.split(",")]
+        return self.cors_origins
 
 
 @lru_cache()

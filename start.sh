@@ -29,11 +29,20 @@ if ! command -v node &> /dev/null; then
     exit 1
 fi
 
-echo -e "${GREEN}[1/4]${NC} Running setup script..."
+echo -e "${GREEN}[1/5]${NC} Installing Python dependencies..."
+if [ ! -d ".venv" ]; then
+    echo "Creating virtual environment..."
+    python3 -m venv .venv
+fi
+echo "Installing backend packages..."
+pip3 install -e ".[dev]" --quiet || pip install -e ".[dev]" --quiet
+echo ""
+
+echo -e "${GREEN}[2/5]${NC} Running setup script..."
 python3 scripts/setup.py
 echo ""
 
-echo -e "${GREEN}[2/4]${NC} Installing frontend dependencies..."
+echo -e "${GREEN}[3/5]${NC} Installing frontend dependencies..."
 cd frontend
 if [ ! -d "node_modules" ]; then
     echo "Installing npm packages for the first time..."
@@ -44,7 +53,7 @@ fi
 cd ..
 echo ""
 
-echo -e "${GREEN}[3/4]${NC} Starting backend server..."
+echo -e "${GREEN}[4/5]${NC} Starting backend server..."
 # Start backend in background
 cd backend
 python3 main.py &
@@ -54,7 +63,7 @@ echo "Backend started (PID: $BACKEND_PID)"
 sleep 3
 echo ""
 
-echo -e "${GREEN}[4/4]${NC} Starting frontend server..."
+echo -e "${GREEN}[5/5]${NC} Starting frontend server..."
 # Start frontend in background
 cd frontend
 npm run dev &

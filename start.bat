@@ -25,7 +25,21 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo [1/4] Running setup script...
+echo [1/5] Installing Python dependencies...
+if not exist ".venv" (
+    echo Creating virtual environment...
+    python -m venv .venv
+)
+echo Installing backend packages...
+pip install -e ".[dev]" --quiet
+if errorlevel 1 (
+    echo [ERROR] Python dependency installation failed
+    pause
+    exit /b 1
+)
+echo.
+
+echo [2/5] Running setup script...
 python scripts\setup.py
 if errorlevel 1 (
     echo [ERROR] Setup failed
@@ -34,7 +48,7 @@ if errorlevel 1 (
 )
 echo.
 
-echo [2/4] Installing frontend dependencies...
+echo [3/5] Installing frontend dependencies...
 cd frontend
 if not exist "node_modules" (
     echo Installing npm packages for the first time...
@@ -51,13 +65,13 @@ if not exist "node_modules" (
 cd ..
 echo.
 
-echo [3/4] Starting backend server...
+echo [4/5] Starting backend server...
 echo Opening new terminal for backend...
 start "OmniNode Backend" cmd /k "cd /d %~dp0backend && python main.py"
 timeout /t 3 /nobreak >nul
 echo.
 
-echo [4/4] Starting frontend server...
+echo [5/5] Starting frontend server...
 echo Opening new terminal for frontend...
 start "OmniNode Frontend" cmd /k "cd /d %~dp0frontend && npm run dev"
 echo.

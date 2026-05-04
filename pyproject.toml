@@ -38,14 +38,6 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     "Typing :: Typed",
 ]
-
-[project.urls]
-Homepage = "https://github.com/yourusername/omni-node"
-Documentation = "https://github.com/yourusername/omni-node/blob/main/README.md"
-Repository = "https://github.com/yourusername/omni-node"
-Issues = "https://github.com/yourusername/omni-node/issues"
-Changelog = "https://github.com/yourusername/omni-node/releases"
-
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",
@@ -61,6 +53,13 @@ dependencies = [
     "httpx>=0.27.0",
     "mcp>=1.0.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/ShanKonduru/omni-node"
+Documentation = "https://github.com/ShanKonduru/omni-node/blob/main/README.md"
+Repository = "https://github.com/ShanKonduru/omni-node"
+Issues = "https://github.com/ShanKonduru/omni-node/issues"
+Changelog = "https://github.com/ShanKonduru/omni-node/releases"
 
 [project.optional-dependencies]
 dev = [
